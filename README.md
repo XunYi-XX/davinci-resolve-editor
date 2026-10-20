@@ -20,6 +20,7 @@ Scripting API for project inspection, timeline assembly, and verified edits.
 - 设置片段属性，例如透明度、裁切、位置、缩放和旋转。
 - 删除明确指定的时间线片段。
 - 按需提供抒情情绪片、事件回顾和历史时间线风格学习的剪辑参考。
+- 内置 OpenFilm 相关工作流，相关视频请求可在同一任务中直接路由执行。
 - 导出 OTIO、FCPXML 1.10 或 DRT。
 - 运行会自动清理测试时间线的本地自测。
 - 所有命令输出 JSON，便于 Codex 核验实际结果。
@@ -124,6 +125,8 @@ python <skill-directory>/scripts/resolve_cli.py self-test
 - Deletes explicit timeline item IDs.
 - Provides an on-demand editing reference for lyrical emotional films, event
   recaps, and style extraction from existing timelines.
+- Bundles the OpenFilm workflow so related video requests can be routed and
+  executed within the same task.
 - Exports OTIO, FCPXML 1.10, or DRT.
 - Provides a reversible local self-test.
 - Returns machine-readable JSON from every command for reliable verification.
@@ -229,6 +232,9 @@ davinci-resolve-editor/
 |-- references/
 |   |-- operations.md
 |   `-- editing-styles.md
+|-- skills/
+|   `-- openfilm/
+|       `-- SKILL.md
 `-- scripts/
     `-- resolve_cli.py
 ```
@@ -242,6 +248,8 @@ davinci-resolve-editor/
 - `references/editing-styles.md`: mood-led editing and style-extraction
   guidance, including the lyrical emotional film framework.
   情绪向剪辑与既有时间线风格提取参考，包括抒情情绪片框架。
+- `skills/openfilm/SKILL.md`: bundled OpenFilm web-native film workflow.
+  内置的 OpenFilm 网页原生影片工作流；主 skill 会在匹配请求中同步读取并执行。
 - `scripts/resolve_cli.py`: dependency-free Resolve CLI.  
   无第三方依赖的达芬奇命令行工具。
 - `agents/openai.yaml`: UI metadata and invocation policy.  

@@ -10,6 +10,22 @@ Use the official scripting API through `scripts/resolve_cli.py`. Prefer API oper
 For the full user-facing bilingual overview, read [README.md](README.md). The
 remainder of this file is the concise execution contract for the agent.
 
+## Integrated Related Workflows
+
+Related workflows bundled under `skills/` are not automatically activated as
+separate top-level Codex skills. When a request matches one, read its
+`SKILL.md` in full and execute it in the same turn instead of only suggesting
+that the user invoke another skill.
+
+- For OpenFilm, web-native films, `film.html`, motion graphics, explainers,
+  launch films, music videos, or OpenFilm Studio, read
+  [skills/openfilm/SKILL.md](skills/openfilm/SKILL.md) and follow it.
+- If the combined task also needs DaVinci Resolve, complete the OpenFilm
+  creation or export first, then use this skill's Resolve checks, imports, and
+  read-back verification afterward.
+- Keep ordinary DaVinci project, timeline, media, marker, and clip-property
+  requests on this skill's Resolve workflow; do not redirect them to OpenFilm.
+
 ## Workflow
 
 1. Confirm Resolve is open and run `status`.
