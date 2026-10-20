@@ -69,6 +69,14 @@ edit, generate, rename, delete, or reorganize files inside those directories.
 - Treat a `False` or `None` return from a mutation as failure. Never report success until a read-back confirms the expected state.
 - Save the project only when the user requested it or when doing so is a necessary part of the requested workflow.
 
+## Narrative and Style
+
+For editorial recommendations, emotional montage, event-recap structure, or a
+style described as `抒情情绪片`, read
+[references/editing-styles.md](references/editing-styles.md). Use its structure
+and rhythm ranges as adaptable guidance; the footage, music, and explicit user
+intent take priority.
+
 ## Connection
 
 The helper discovers the standard API directories and the running Resolve installation. If discovery fails, set:
