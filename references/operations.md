@@ -37,6 +37,12 @@ must be restored after a failed test.
 
 Use item unique IDs to target clip-property and deletion operations. Names are not guaranteed to be unique.
 
+For read-only style or version audits that need track/clip enabled state, make
+each target timeline current before querying `GetIsTrackEnabled` and
+`GetClipEnabled`. In locally observed Resolve behavior, querying a non-current
+timeline could return misleading `False` values. Restore the original current
+timeline and playhead after inspection; do not save unless the user requests it.
+
 ## Media and sequence assembly
 
 `list-media` recursively reads the current project's media pool. It reports file paths, media IDs, clip names, types, frame rates, source frame counts, and resolutions.
