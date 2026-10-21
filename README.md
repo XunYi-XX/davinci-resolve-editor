@@ -20,6 +20,7 @@ Scripting API for project inspection, timeline assembly, and verified edits.
 - 设置片段属性，例如透明度、裁切、位置、缩放和旋转。
 - 删除明确指定的时间线片段。
 - 按需提供抒情情绪片、事件回顾和历史时间线风格学习的剪辑参考。
+- 可对既有时间线做只读帧审计，提取镜头节奏、素材复用、变速、转场和声音交接规律。
 - 内置 OpenFilm 相关工作流，相关视频请求可在同一任务中直接路由执行。
 - 导出 OTIO、FCPXML 1.10 或 DRT。
 - 运行会自动清理测试时间线的本地自测。
@@ -125,6 +126,9 @@ python <skill-directory>/scripts/resolve_cli.py self-test
 - Deletes explicit timeline item IDs.
 - Provides an on-demand editing reference for lyrical emotional films, event
   recaps, and style extraction from existing timelines.
+- Audits existing timelines read-only, using timeline metadata and sampled
+  frames to extract rhythm, source reuse, retiming, transition, and sound
+  handoff patterns.
 - Bundles the OpenFilm workflow so related video requests can be routed and
   executed within the same task.
 - Exports OTIO, FCPXML 1.10, or DRT.
@@ -245,9 +249,9 @@ davinci-resolve-editor/
   面向用户和 GitHub 访客的双语说明。
 - `references/operations.md`: detailed English operations reference.  
   英文详细操作参考。
-- `references/editing-styles.md`: mood-led editing and style-extraction
-  guidance, including the lyrical emotional film framework.
-  情绪向剪辑与既有时间线风格提取参考，包括抒情情绪片框架。
+- `references/editing-styles.md`: mood-led editing, event-recap montage, and
+  read-only frame-audited style extraction guidance.
+  情绪向剪辑、事件回顾蒙太奇及只读帧审计式风格提取参考。
 - `skills/openfilm/SKILL.md`: bundled OpenFilm web-native film workflow.
   内置的 OpenFilm 网页原生影片工作流；主 skill 会在匹配请求中同步读取并执行。
 - `scripts/resolve_cli.py`: dependency-free Resolve CLI.  

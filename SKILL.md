@@ -1,6 +1,6 @@
 ---
 name: davinci-resolve-editor
-description: Connect to a running DaVinci Resolve Studio instance and inspect or edit projects, timelines, media, markers, clip properties, and exports through Blackmagic's official scripting API. 连接正在运行的达芬奇并检查或剪辑项目、时间线、素材、标记、片段属性及导出内容。
+description: Connect to a running DaVinci Resolve Studio instance to inspect or edit projects, timelines, media, markers, clip properties, and exports, or analyze timeline structure and sample frames to learn an editing style. 连接正在运行的达芬奇，检查或剪辑项目、时间线、素材、标记、片段属性及导出内容，也可分析时间线与画面帧、学习剪辑风格。
 ---
 
 # DaVinci Resolve Editor / 达芬奇剪辑助手
@@ -87,11 +87,18 @@ edit, generate, rename, delete, or reorganize files inside those directories.
 
 ## Narrative and Style
 
-For editorial recommendations, emotional montage, event-recap structure, or a
-style described as `抒情情绪片`, read
+For editorial recommendations, emotional montage, event recaps, frame-audited
+style learning, or a style described as `抒情情绪片`, read
 [references/editing-styles.md](references/editing-styles.md). Use its structure
 and rhythm ranges as adaptable guidance; the footage, music, and explicit user
 intent take priority.
+
+When the user asks to learn from an existing timeline rather than revise it,
+treat the workflow as read-only: do not save, mark, duplicate, trim, or export
+the project. Inspect timeline and source ranges, sample rendered or source
+frames outside the project, and record conclusions in the user's requested
+knowledge location. Do not infer permission to update the project from a style
+analysis request.
 
 ## Connection
 

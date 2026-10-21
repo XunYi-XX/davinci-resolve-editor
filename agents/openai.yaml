@@ -1,6 +1,6 @@
 interface:
   display_name: "达芬奇剪辑助手 / DaVinci Resolve Editor"
-  short_description: "达芬奇本地剪辑与验证 / Verified Resolve edits"
+  short_description: "达芬奇剪辑、审片与验证 / Verified Resolve edits and style audits"
   default_prompt: "使用 $davinci-resolve-editor / Use $davinci-resolve-editor to inspect my current Resolve project and perform the requested edit safely."
 
 policy:
