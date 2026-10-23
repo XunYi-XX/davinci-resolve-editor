@@ -1,5 +1,8 @@
 # Basketball and Sports-Event Recaps
 
+Use [style-audit.md](style-audit.md) for the shared measurement, privacy, and
+read-only workflow; [operations.md](operations.md) covers Resolve commands.
+
 Use for basketball-event footage selection, recap editing, and learning from
 a finished sports timeline. Adapt to the user's purpose: an event recap may
 need participation and supporters; a competitive highlight or team story may
@@ -120,18 +123,3 @@ changes and a light pulse during reduced layers, preserve those requirements.
 These are user preferences, not properties established by this reference's
 waveform. For OpenFilm arrangements, keep requested instruments on separate
 tracks so the user can adjust them.
-
-## Evidence and Reuse Boundaries
-
-Keep private frame sheets, source paths, project IDs, faces, and identifying
-event details in the user's local analysis records. Publish only de-identified
-patterns and necessary aggregate measurements in reusable skill references.
-
-An existing render may support frame analysis when duration and representative
-source order match, but this is not proof that every current effect or grade
-matches that render. Disclose that boundary. If current thumbnails fail, report
-the fallback rather than treating source frames as current rendered output.
-
-Learning from a finished timeline remains read-only under the main skill:
-restore any navigated page/playhead and verify identity and item counts without
-saving, marking, trimming, duplicating, or exporting the project.

@@ -1,113 +1,74 @@
 ---
 name: davinci-resolve-editor
-description: Connect to a running DaVinci Resolve Studio instance to inspect or edit projects, timelines, media, markers, clip properties, and exports, or analyze timeline structure and sample frames to learn an editing style. 连接正在运行的达芬奇，检查或剪辑项目、时间线、素材、标记、片段属性及导出内容，也可分析时间线与画面帧、学习剪辑风格。
+description: Inspect or edit a running DaVinci Resolve project through its Scripting API, select and assemble footage, or learn an editing style from timeline structure and sampled frames. Includes event, basketball, cultural quick-cut, and lyrical editing guidance. 连接达芬奇检查或剪辑项目、筛选组装素材，并通过时间线与抽帧学习剪辑风格。
 ---
 
 # DaVinci Resolve Editor / 达芬奇剪辑助手
 
-Use the official scripting API through `scripts/resolve_cli.py`. Prefer API operations over mouse and keyboard automation. Keep all output machine-readable JSON.
+Use `scripts/resolve_cli.py` for the official Resolve Scripting API. Prefer API
+operations to UI automation. CLI results are JSON; explain the verified outcome
+in the user's language. This package provides one entrypoint and task-specific
+references. Read only the references needed for the request.
 
-For the full user-facing bilingual overview, read [README.md](README.md). The
-remainder of this file is the concise execution contract for the agent.
+## Choose the Workflow
 
-## Integrated Related Workflows
+| Request | Reference and action |
+|---|---|
+| Project, timeline, media, marker, property, assembly, or export operations | [operations.md](references/operations.md); use the CLI below |
+| Learn a finished timeline, review shot selection, rhythm, music use, or compare versions | [style-audit.md](references/style-audit.md); default to read-only |
+| Editorial judgment, selection, structure, or an edit in a named style | [editing-styles.md](references/editing-styles.md); choose its relevant style reference |
+| OpenFilm, `film.html`, OpenFilm Studio, or a combined OpenFilm/Resolve task | [openfilm-integration.md](references/openfilm-integration.md); use the separately installed OpenFilm skill when available |
 
-Related workflows bundled under `skills/` are not automatically activated as
-separate top-level Codex skills. When a request matches one, read its
-`SKILL.md` in full and execute it in the same turn instead of only suggesting
-that the user invoke another skill.
+A request to inspect or edit a Resolve timeline stays on the Resolve workflow.
+Do not route it to OpenFilm merely because it concerns video. If the user uses
+`of` or `OF` as their established OpenFilm shorthand, interpret it accordingly.
 
-- For OpenFilm, web-native films, `film.html`, motion graphics, explainers,
-  launch films, music videos, or OpenFilm Studio, read
-  [skills/openfilm/SKILL.md](skills/openfilm/SKILL.md) and follow it.
-- If the combined task also needs DaVinci Resolve, complete the OpenFilm
-  creation or export first, then use this skill's Resolve checks, imports, and
-  read-back verification afterward.
-- Keep ordinary DaVinci project, timeline, media, marker, and clip-property
-  requests on this skill's Resolve workflow; do not redirect them to OpenFilm.
+## Resolve Workflow
 
-## Workflow
+1. Run `status`; record the current project, timeline, page, and playhead as needed.
+2. Read the target using `list-timelines`, `inspect-timeline`, and, when needed,
+   `list-media`. Identify the project/timeline explicitly and use stable IDs.
+3. For an edit that could replace existing work, duplicate the timeline and edit
+   the duplicate. Apply only the requested operations.
+4. Read the affected state back. Verify ranges, IDs, counts, markers, properties,
+   or output artifacts that demonstrate the requested result.
+5. Report the concrete outcome and any failed step. Restore navigation changed
+   only for inspection; save only when requested or necessary for authorized work.
 
-1. Confirm Resolve is open and run `status`.
-2. Read the target before changing it with `list-timelines`, `inspect-timeline`, and `list-media`.
-3. Identify the project and timeline explicitly. If the request could replace existing work, duplicate the timeline first and edit the duplicate.
-4. Perform the smallest operation that meets the request.
-5. Re-read the affected timeline or marker state. Report the concrete changes and any cleanup or failed steps.
+When learning from a finished timeline, do not save, mark, duplicate, trim, or
+export the project. Sample existing rendered or source frames outside project
+and media directories. Record conclusions in the user's requested location;
+analysis does not authorize an edit. Follow the evidence limits in the audit
+reference, particularly visible-shot counts, source rates, render matching,
+and music listening versus waveform estimates.
 
-Do not switch or delete user projects as an implementation shortcut. Do not delete or replace existing timeline content unless the user explicitly asked for that edit. For destructive edits, require exact item IDs or timeline names and pass the CLI's explicit confirmation flag.
-
-## Commands
-
-Run commands with:
+## CLI
 
 ```text
 python <skill-directory>/scripts/resolve_cli.py <command> [options]
 ```
 
-Core commands:
+Start with `status`, `list-timelines`, `inspect-timeline`, and `list-media`.
+Use `<command> --help` before guessing option names; the complete command map,
+source-range semantics, connection setup, and known compatibility limits are
+in [operations.md](references/operations.md). Human-facing setup and examples
+are in [README.md](README.md).
 
-```text
-status
-list-projects
-open-project --name NAME
-list-timelines
-inspect-timeline [--timeline NAME]
-list-media [--limit N]
-set-current-timeline --timeline NAME
-duplicate-timeline [--timeline NAME] --name NEW_NAME
-delete-timeline --name NAME --confirm
-create-timeline --name NAME [--generator NAME]
-import-media PATH [PATH ...]
-append-media PATH [PATH ...] [--timeline NAME] [--start-frame N] [--end-frame N]
-append-media-item --media-id ID [--timeline NAME] [--start-frame N] [--end-frame N]
-insert-generator --generator NAME [--timeline NAME]
-add-marker --frame N [--timeline NAME] [--name TEXT] [--color Blue]
-export-timeline --timeline NAME --output PATH --format otio
-set-clip-property --item-id ID --property Opacity --value 80
-delete-clips --item-id ID [--item-id ID ...] --confirm
-self-test
-```
+## Execution Boundaries
 
-Use `--help` on a command before guessing option names. Read [references/operations.md](references/operations.md) for command semantics, API constraints, and verification details.
-
-## Blackmagic documentation
-
-Treat Blackmagic Developer and Technical Documentation directories as strictly
-read-only. Read files there when API or product behavior is unclear, but never
-edit, generate, rename, delete, or reorganize files inside those directories.
-
-## Editing Rules
-
-- Frames are integers and use the timeline's frame rate. Prefer frame values over timecode text for API operations.
-- `append-media` imports and appends media. Use `--start-frame` and `--end-frame` for source ranges when assembling trimmed sequences.
-- Marker colors are case-insensitive but must be one of the standard Resolve colors.
-- Clip property values are parsed as JSON when possible, so numbers, booleans, arrays, and objects retain their types.
-- Treat a `False` or `None` return from a mutation as failure. Never report success until a read-back confirms the expected state.
-- Save the project only when the user requested it or when doing so is a necessary part of the requested workflow.
-
-## Narrative and Style
-
-For editorial recommendations, emotional montage, event recaps, frame-audited
-style learning, or a style described as `抒情情绪片`, read
-[references/editing-styles.md](references/editing-styles.md). Use its structure
-and rhythm ranges as adaptable guidance; the footage, music, and explicit user
-intent take priority.
-
-When the user asks to learn from an existing timeline rather than revise it,
-treat the workflow as read-only: do not save, mark, duplicate, trim, or export
-the project. Inspect timeline and source ranges, sample rendered or source
-frames outside the project, and record conclusions in the user's requested
-knowledge location. Do not infer permission to update the project from a style
-analysis request.
-
-## Connection
-
-The helper discovers the standard API directories and the running Resolve installation. If discovery fails, set:
-
-```text
-RESOLVE_SCRIPT_API
-RESOLVE_SCRIPT_LIB
-```
-
-`RESOLVE_SCRIPT_LIB` should point to `fusionscript.dll` on Windows, `fusionscript.so` on Linux, or the equivalent library inside the macOS application bundle.
-
+- Do not switch or delete user projects as an implementation shortcut. Opening
+  another project requires the user's selected target or a necessary restoration.
+- Do not delete or replace existing timeline content without an explicit request.
+  Destructive commands require exact item IDs or timeline names and `--confirm`.
+- Treat `False` or `None` from a mutation as failure. Re-read state before retrying
+  to avoid duplicate changes; do not automatically retry a hung operation.
+- Distinguish timeline frames, source frames, and timeline-relative markers. Use
+  the correct frame rate for each; prefer integer frames over ambiguous timecodes.
+- Marker colors must be Resolve's standard colors. Property values are parsed as
+  JSON, preserving numeric, boolean, array, and object types.
+- Blackmagic Developer and Technical Documentation directories are read-only.
+- Local technical evidence and user preferences outrank style examples. Timing
+  measurements in references are calibration, not fixed quotas.
+- Keep private project identifiers, source paths, screenshots, and faces in local
+  analysis records. Publish reusable, de-identified strategy only when requested;
+  Git synchronization follows the user's authorization and repository scope.

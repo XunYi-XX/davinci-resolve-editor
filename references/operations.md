@@ -2,12 +2,40 @@
 
 ## Contents
 
+- CLI command map
 - Connection and diagnostics
 - Timeline inspection
 - Media and sequence assembly
 - Markers and clip properties
 - Export and local self-test
 - Safety and verification
+
+## CLI command map
+
+Run `python <skill-directory>/scripts/resolve_cli.py <command> [options]`.
+Every command supports `--help`; use it for the exact arguments and defaults.
+
+| Command | Purpose |
+|---|---|
+| `status` | Read connection, product, project, page, and current timeline |
+| `list-projects` | List projects in the current database folder |
+| `open-project --name NAME` | Open the explicitly selected project |
+| `list-timelines` | List current project timelines and identify the active one |
+| `inspect-timeline [--timeline NAME]` | Read tracks, items, source ranges, and markers |
+| `list-media [--limit N]` | Recursively inspect media-pool items |
+| `set-current-timeline --timeline NAME` | Navigate to a named timeline |
+| `duplicate-timeline --name NEW_NAME` | Duplicate the selected/current timeline |
+| `delete-timeline --name NAME --confirm` | Delete one explicitly selected timeline |
+| `create-timeline --name NAME` | Create an empty timeline; optionally add a generator |
+| `import-media PATH [PATH ...]` | Import files without appending them |
+| `append-media PATH [PATH ...]` | Import and append files, optionally by source range |
+| `append-media-item --media-id ID` | Append an existing pool item by source range |
+| `insert-generator --generator NAME` | Insert a standard generator |
+| `add-marker --frame N` | Add a timeline-relative marker and verify it |
+| `set-clip-property --item-id ID --property NAME --value VALUE` | Set one item's property |
+| `delete-clips --item-id ID --confirm` | Delete only specified item IDs |
+| `export-timeline --timeline NAME --output PATH --format FORMAT` | Export OTIO, FCPXML, or DRT |
+| `self-test` | Create and clean up a temporary test timeline; requires authorized mutation |
 
 ## Connection and diagnostics
 
@@ -19,6 +47,12 @@ Run `status` first. A usable response contains a product name, version, project 
 - standard installation paths for Windows, macOS, and Linux.
 
 The API must be allowed to run scripts. External scripting is local by default in Resolve preferences. Enabling LAN scripting is unnecessary and should not be requested for the local helper.
+
+`RESOLVE_SCRIPT_API` points to the Scripting API directory containing
+`Modules/DaVinciResolveScript.py`. `RESOLVE_SCRIPT_LIB` points to
+`fusionscript.dll` on Windows, `fusionscript.so` on Linux, or the matching
+library inside the macOS application bundle. Set these only when discovery
+fails; follow the helper's actual diagnostic rather than guessing paths.
 
 ## Timeline inspection
 
@@ -42,6 +76,12 @@ each target timeline current before querying `GetIsTrackEnabled` and
 `GetClipEnabled`. In locally observed Resolve behavior, querying a non-current
 timeline could return misleading `False` values. Restore the original current
 timeline and playhead after inspection; do not save unless the user requests it.
+
+The CLI's compact item listing does not supply every style-audit field. When
+needed, use the same official API connection for track/clip enable state, source
+media frame rates, audio properties, and supported thumbnails. Missing fields
+remain unknown; do not silently substitute the project or timeline frame rate.
+See [style-audit.md](style-audit.md) for the analysis workflow.
 
 ## Media and sequence assembly
 

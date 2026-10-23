@@ -1,261 +1,174 @@
 # DaVinci Resolve Editor / 达芬奇剪辑助手
 
-通过 Blackmagic 官方 Scripting API 连接本机达芬奇，让 Codex 检查项目、组装时间线并执行经过验证的剪辑操作。
+通过 Blackmagic 官方 Scripting API 连接本机达芬奇，把项目操作、素材选取、
+剪辑策略和成片风格学习组织在同一个 Skill 入口中。
 
-Connect Codex to a local DaVinci Resolve session through Blackmagic's official
-Scripting API for project inspection, timeline assembly, and verified edits.
+Connect Codex to a local DaVinci Resolve session through the official Scripting
+API, with one entrypoint for project operations, footage selection, editorial
+strategy, and read-only style learning.
 
-> 这个 Skill 不依赖 MCP 服务。  
-> This Skill does not require an MCP server.
+本包的 Resolve CLI 不依赖 MCP 服务或第三方 Python 库。OpenFilm 是可选的独立
+技能，按需联动，不包含在本仓库中。
+
+The Resolve CLI requires no MCP server or third-party Python libraries. OpenFilm
+is an optional, separately installed skill, not a bundled runtime.
 
 ## 中文说明
 
-### 功能
+### 统一任务入口
 
-- 检测并连接正在运行的 DaVinci Resolve Studio。
-- 读取项目、时间线、轨道、片段、源入点/出点、素材库和标记。
-- 创建、切换、复制和删除明确指定的时间线。
-- 导入素材，或将已有素材按源范围追加到时间线。
-- 插入生成器、标记和标题相关基础对象。
-- 设置片段属性，例如透明度、裁切、位置、缩放和旋转。
-- 删除明确指定的时间线片段。
-- 按需提供抒情情绪片、事件回顾、文化活动快剪和历史时间线风格学习的剪辑参考。
-- 可对既有时间线做只读帧审计，提取镜头节奏、素材复用、变速、转场和声音交接规律。
-- 内置 OpenFilm 相关工作流，相关视频请求可在同一任务中直接路由执行。
-- 导出 OTIO、FCPXML 1.10 或 DRT。
-- 运行会自动清理测试时间线的本地自测。
-- 所有命令输出 JSON，便于 Codex 核验实际结果。
+| 任务 | 工作方式 |
+|---|---|
+| 检查项目、时间线、轨道、源范围和素材库 | 官方 API 只读检查 |
+| 组装时间线、导入素材、标记、片段属性、删除和导出 | 明确目标后执行，再读回核验 |
+| 学习当前成片的选材、节奏、转场与配乐使用 | 时间线结构 + 可见画面抽帧 + 声音证据，默认只读 |
+| 抒情情绪片、事件回顾、文化活动快剪、篮球活动片 | 读取对应专题策略，按素材和目标调整 |
+| OpenFilm 制作与 Resolve 导入衔接 | 调用已安装的 OpenFilm 技能，先验证产物，再按授权导入 |
 
-### 环境要求
+### 安装与环境
 
-- DaVinci Resolve 已打开，并已加载项目。
-- Python 3.8 或更高版本；CLI 不使用第三方 Python 依赖。
-- 允许本机外部脚本访问。通常不需要开启 LAN Scripting。
-- 已在 DaVinci Resolve Studio 21.0.4.5 上完成本地实测。
-
-### 安装
-
-将整个 `davinci-resolve-editor` 文件夹放入 Codex 用户技能目录：
+将整个 `davinci-resolve-editor` 文件夹放入：
 
 ```text
 $CODEX_HOME/skills/davinci-resolve-editor
 ```
 
-如果未设置 `CODEX_HOME`，默认位置通常是：
+未设置 `CODEX_HOME` 时，通常为 `~/.codex/skills/davinci-resolve-editor`。
+重新加载 Codex 后即可使用。Resolve 操作需要本机已打开达芬奇并加载项目，
+以及 Python 3.8+、本机外部脚本访问权限；无需开启 LAN Scripting。
+
+CLI 的连接与编辑曾在 Resolve Studio 21.0.4.5 上测试；只读项目和时间线检查
+也在 Studio 21.1.1.10 上使用过。后者不代表所有写操作都已在该版本验证。
+
+OpenFilm 联动需要独立安装 `openfilm` 技能。纯 Resolve 工作不依赖它。配置与
+诊断详见 [操作参考](references/operations.md)。
+
+### 使用示例
 
 ```text
-~/.codex/skills/davinci-resolve-editor
+使用 $davinci-resolve-editor 检查当前时间线，告诉我轨道和素材结构。
+
+学习我现在打开的成片：分析素材选择、动作入出点、剪辑节奏和音乐交接，不修改项目。
+
+按篮球活动片的风格，从已有素材组装一条新时间线，保留原片。
+
+把我已经确认的 OpenFilm 片头导入指定的 Resolve 时间线，并核验位置和时长。
 ```
 
-重新加载 Codex 后，可显式调用：
-
-```text
-使用 $davinci-resolve-editor 检查当前项目，并告诉我当前时间线的内容
-```
-
-### 直接使用 CLI
+直接使用 CLI：
 
 ```text
 python <skill-directory>/scripts/resolve_cli.py status
-```
-
-常用示例：
-
-```text
 python <skill-directory>/scripts/resolve_cli.py list-timelines
 python <skill-directory>/scripts/resolve_cli.py inspect-timeline --timeline "Timeline 11"
-python <skill-directory>/scripts/resolve_cli.py duplicate-timeline --timeline "Timeline 11" --name "Timeline 11 Edit"
-python <skill-directory>/scripts/resolve_cli.py append-media-item --media-id MEDIA_ID --timeline "Timeline 11 Edit" --start-frame 100 --end-frame 220
-python <skill-directory>/scripts/resolve_cli.py add-marker --timeline "Timeline 11 Edit" --frame 120 --color Green --name "Review"
-python <skill-directory>/scripts/resolve_cli.py self-test
+python <skill-directory>/scripts/resolve_cli.py list-media --limit 20
 ```
 
-每个子命令都支持 `--help`。
+所有命令输出 JSON，并支持 `--help`。完整命令表和源入出点规则见
+[操作参考](references/operations.md)。
 
-### 命令概览
+### 策略与学习记录
 
-| 命令 | 用途 |
-| --- | --- |
-| `status` | 显示 Resolve、当前项目和页面状态 |
-| `list-projects` | 列出当前数据库文件夹中的项目 |
-| `open-project --name NAME` | 按完整名称打开项目 |
-| `list-timelines` | 列出项目时间线 |
-| `inspect-timeline` | 显示轨道、片段、源范围和标记 |
-| `list-media` | 递归列出素材库 |
-| `set-current-timeline` | 将指定时间线设为当前时间线 |
-| `duplicate-timeline` | 复制时间线，适合无损试验 |
-| `delete-timeline` | 删除一条明确命名的时间线 |
-| `create-timeline` | 创建空时间线或插入生成器 |
-| `import-media` | 将文件导入素材库 |
-| `append-media` | 导入并追加文件到时间线 |
-| `append-media-item` | 按素材 ID 追加项目内已有素材 |
-| `insert-generator` | 插入标准生成器 |
-| `add-marker` | 添加并核验时间线标记 |
-| `set-clip-property` | 设置指定片段属性 |
-| `delete-clips` | 删除明确列出的片段 ID |
-| `export-timeline` | 导出 OTIO、FCPXML 或 DRT |
-| `self-test` | 创建临时时间线、写入并自动清理 |
+- [策略索引](references/editing-styles.md)：按成片目标选择专题。
+- [抒情情绪片](references/lyrical-emotional.md)：空间、人物、情绪展开与释放。
+- [事件回顾](references/event-recap.md)：纪实蒙太奇、人物互动与现场声收束。
+- [文化活动快剪](references/cultural-quick-cut.md)：细节、参与和表演的短片节奏。
+- [篮球活动片](references/basketball-event-recap.md)：动作选段、疏密变化、应援与集体收尾。
+- [只读风格审计](references/style-audit.md)：可见镜头计数、抽帧、变速、声音与证据边界。
+- [OpenFilm 联动](references/openfilm-integration.md)：独立技能发现、产物验证与 Resolve 交接。
 
-### 安全规则
+样片中的时长和节拍是参考证据，不是固定配额。区分实际听辨、波形测量与推断；
+不凭文件名判断乐器，不凭素材帧率判断慢动作。具体项目信息和截图留在用户本地，
+可复用策略去标识后再按用户要求同步 Git。
 
-- Blackmagic 的 Developer 和 Technical Documentation 目录始终只读。
-- 修改现有时间线前先读取其唯一 ID、片段数量和标记。
-- 可能影响现有内容的操作优先在复制时间线上进行。
-- `delete-timeline` 和 `delete-clips` 必须提供 `--confirm`。
-- 删除片段时默认只处理传入的 ID；链接的视频和音频通常需要分别指定。
-- 不要仅凭 API 返回值报告成功，必须重新读取并核验。
-- 自动重试可能导致 Resolve 无响应的操作是不允许的。
+### 操作边界与验证
 
-### 已知兼容性
+- 学习成片时不保存、标记、复制、裁切或导出工程；检查结束恢复为检查而改变的页面和播放头。
+- 修改前读取目标身份与状态；可能替换现有内容时优先使用复制时间线。
+- 删除必须明确指定时间线名称或片段 ID，并使用 `--confirm`。
+- API 返回成功不等于结果正确，必须读回核验；失败结果未确定前不盲目重试。
+- Blackmagic Developer 和 Technical Documentation 目录始终只读。
 
-在本地测试的 Resolve Studio 21.0.4.5 中，对通过 API 新建的 `Solid Color`
-生成器片段直接调用属性写入曾使 Resolve 无响应；对真实视频片段执行同类属性
-写入正常。生成器属性操作不在自动自测中。修改属性前请先保存项目并操作复制
-时间线。
+`self-test` 会在当前项目创建并清理临时时间线，属于会写入工程的测试，不用于只读
+风格学习。在 Studio 21.0.4.5 上，对 API 新建 `Solid Color` 生成器写属性曾使
+Resolve 无响应；生成器属性修改不包含在自动自测中。按操作参考在已保存的副本上
+处理这类已知风险，不自动重试造成无响应的操作。
 
 ## English Guide
 
-### What it does
+### Install and connect
 
-- Detects and connects to a running DaVinci Resolve Studio instance.
-- Reads projects, timelines, tracks, clips, source ranges, media pools, and markers.
-- Creates, selects, duplicates, and deletes explicitly named timelines.
-- Imports media or appends an existing media-pool item using a source range.
-- Inserts generators and basic timeline objects.
-- Sets clip properties such as opacity, crop, pan, zoom, and rotation.
-- Deletes explicit timeline item IDs.
-- Provides an on-demand editing reference for lyrical emotional films, event
-  recaps, cultural-event quick cuts, and style extraction from existing
-  timelines.
-- Audits existing timelines read-only, using timeline metadata and sampled
-  frames to extract rhythm, source reuse, retiming, transition, and sound
-  handoff patterns.
-- Bundles the OpenFilm workflow so related video requests can be routed and
-  executed within the same task.
-- Exports OTIO, FCPXML 1.10, or DRT.
-- Provides a reversible local self-test.
-- Returns machine-readable JSON from every command for reliable verification.
+Place the complete folder under `$CODEX_HOME/skills/davinci-resolve-editor`, or
+`~/.codex/skills/davinci-resolve-editor` when that variable is unset. Reload Codex.
+Resolve operations require a running Resolve project, Python 3.8+, and local
+external scripting access. LAN scripting is unnecessary.
 
-### Requirements
+Connection and editing were tested on Studio 21.0.4.5; read-only inspection was
+also used on Studio 21.1.1.10. This does not certify every mutation on the latter.
+OpenFilm is optional and separately installed. Read [operations](references/operations.md)
+for diagnostics, environment overrides, the command map, and compatibility notes.
 
-- DaVinci Resolve is running with a project loaded.
-- Python 3.8 or newer; the CLI has no third-party Python dependencies.
-- Local external scripting is enabled. LAN scripting is normally unnecessary.
-- Locally tested with DaVinci Resolve Studio 21.0.4.5.
+### Choose a workflow
 
-### Installation
-
-Place the complete `davinci-resolve-editor` folder under the Codex user skill
-directory:
+- Inspect or edit projects, timelines, media, markers, and properties through
+  the CLI. Identify the target first and verify mutations by readback.
+- For learning from a finished film, follow the
+  [read-only audit](references/style-audit.md): inspect structure, account for
+  visible shots, sample frames, and distinguish listening from signal estimates.
+- For editorial choices, use the [strategy index](references/editing-styles.md)
+  to select lyrical, documentary-event, cultural quick-cut, or basketball guidance.
+- For a combined task, follow [OpenFilm integration](references/openfilm-integration.md),
+  read the installed peer skill, verify its artifact, then perform only the
+  authorized Resolve handoff.
 
 ```text
-$CODEX_HOME/skills/davinci-resolve-editor
+Use $davinci-resolve-editor to inspect my current Resolve timeline.
+Learn shot selection, rhythm, and music handoffs from this film without editing it.
 ```
-
-When `CODEX_HOME` is unset, the usual location is:
-
-```text
-~/.codex/skills/davinci-resolve-editor
-```
-
-Reload Codex, then invoke:
-
-```text
-Use $davinci-resolve-editor to inspect the current project and describe the current timeline.
-```
-
-### CLI usage
 
 ```text
 python <skill-directory>/scripts/resolve_cli.py status
+python <skill-directory>/scripts/resolve_cli.py inspect-timeline
 ```
 
-Common examples:
+Every command supports `--help` and returns JSON. Use timeline or source frame
+rates correctly; do not assume they equal the project default. Reference timings
+are evidence, not quotas. Keep identifying source evidence local and publish
+only authorized, de-identified reusable strategy.
 
-```text
-python <skill-directory>/scripts/resolve_cli.py list-timelines
-python <skill-directory>/scripts/resolve_cli.py inspect-timeline --timeline "Timeline 11"
-python <skill-directory>/scripts/resolve_cli.py duplicate-timeline --timeline "Timeline 11" --name "Timeline 11 Edit"
-python <skill-directory>/scripts/resolve_cli.py append-media-item --media-id MEDIA_ID --timeline "Timeline 11 Edit" --start-frame 100 --end-frame 220
-python <skill-directory>/scripts/resolve_cli.py add-marker --timeline "Timeline 11 Edit" --frame 120 --color Green --name "Review"
-python <skill-directory>/scripts/resolve_cli.py self-test
-```
+### Safety and verification
 
-Every subcommand supports `--help`.
+Read-only learning must not save, mark, duplicate, trim, or export the project.
+Restore navigation changed for inspection. Before a requested mutation, inspect
+IDs and state; use a duplicate when replacement could affect existing work.
+Deletion requires explicit targets and `--confirm`. Establish the prior result
+before retrying an operation. Blackmagic documentation directories are read-only.
 
-### Command overview
+`self-test` creates and removes a temporary timeline and is not a read-only audit.
+On Studio 21.0.4.5, setting a transform property on an API-created `Solid Color`
+generator caused a hang; generator property mutation is excluded from that test.
+Follow the operations reference and do not automatically retry a hung operation.
 
-| Command | Purpose |
-| --- | --- |
-| `status` | Show Resolve, project, and page status |
-| `list-projects` | List projects in the current database folder |
-| `open-project --name NAME` | Open a project by exact name |
-| `list-timelines` | List project timelines |
-| `inspect-timeline` | Show tracks, clips, source ranges, and markers |
-| `list-media` | Recursively list the media pool |
-| `set-current-timeline` | Select a named timeline |
-| `duplicate-timeline` | Duplicate a timeline for non-destructive work |
-| `delete-timeline` | Delete one explicitly named timeline |
-| `create-timeline` | Create an empty timeline or insert a generator |
-| `import-media` | Import files into the media pool |
-| `append-media` | Import files and append them to a timeline |
-| `append-media-item` | Append an existing project media item by ID |
-| `insert-generator` | Insert a standard generator |
-| `add-marker` | Add and verify a timeline marker |
-| `set-clip-property` | Set a property on one timeline item |
-| `delete-clips` | Delete explicitly listed timeline item IDs |
-| `export-timeline` | Export OTIO, FCPXML, or DRT |
-| `self-test` | Create, edit, verify, and clean up a temporary timeline |
-
-### Safety rules
-
-- Always treat Blackmagic Developer and Technical Documentation as read-only.
-- Inspect the target timeline's IDs, item count, and markers before mutation.
-- Prefer a duplicated timeline when the original must remain untouched.
-- `delete-timeline` and `delete-clips` require `--confirm`.
-- Deletion handles only explicitly supplied IDs; pass the linked video and audio
-  IDs separately when both must be removed.
-- Verify every mutation by reading the affected state back.
-- Never automatically retry an operation that made Resolve unresponsive.
-
-### Known compatibility note
-
-On the locally tested Resolve Studio 21.0.4.5 build, setting a transform
-property on an API-created `Solid Color` generator clip made Resolve
-unresponsive. The same property operation succeeded on a real video clip.
-Generator property mutation is excluded from the automatic self-test. Save the
-project and work on a duplicate before changing clip properties.
-
-## Files / 文件结构
+## Package layout / 文件结构
 
 ```text
 davinci-resolve-editor/
-|-- SKILL.md
-|-- README.md
+|-- SKILL.md                         # Unified agent entrypoint
+|-- README.md                        # Human-facing bilingual guide
 |-- agents/
-|   `-- openai.yaml
+|   `-- openai.yaml                  # Existing UI and implicit invocation policy
 |-- references/
-|   |-- operations.md
-|   `-- editing-styles.md
-|-- skills/
-|   `-- openfilm/
-|       `-- SKILL.md
+|   |-- operations.md                # API/CLI semantics and compatibility
+|   |-- editing-styles.md            # Editorial strategy index
+|   |-- lyrical-emotional.md         # Lyrical emotional film
+|   |-- event-recap.md               # Documentary event recap
+|   |-- cultural-quick-cut.md        # Short cultural/social recap
+|   |-- basketball-event-recap.md    # Sports and basketball recap
+|   |-- style-audit.md               # Read-only style extraction
+|   `-- openfilm-integration.md      # Optional peer-skill handoff
 `-- scripts/
-    `-- resolve_cli.py
+    `-- resolve_cli.py               # Dependency-free official-API CLI
 ```
 
-- `SKILL.md`: concise execution instructions for Codex.  
-  Codex 使用的精简执行规则。
-- `README.md`: bilingual human-facing documentation.  
-  面向用户和 GitHub 访客的双语说明。
-- `references/operations.md`: detailed English operations reference.  
-  英文详细操作参考。
-- `references/editing-styles.md`: mood-led editing, event-recap montage,
-  cultural-event quick cuts, and read-only frame-audited style extraction.
-  情绪向剪辑、事件回顾、文化活动快剪及只读帧审计式风格提取参考。
-- `skills/openfilm/SKILL.md`: bundled OpenFilm web-native film workflow.
-  内置的 OpenFilm 网页原生影片工作流；主 skill 会在匹配请求中同步读取并执行。
-- `scripts/resolve_cli.py`: dependency-free Resolve CLI.  
-  无第三方依赖的达芬奇命令行工具。
-- `agents/openai.yaml`: UI metadata and invocation policy.  
-  界面元数据与自动调用策略。
+The installed OpenFilm peer skill owns its current instructions and runtime
+workflow. This package links the handoff without bundling a second copy.
