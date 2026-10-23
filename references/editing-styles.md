@@ -5,6 +5,11 @@ mechanical timeline operation: mood-led montage, an emotional event recap,
 style analysis, or a request described as `抒情情绪片` (a lyrical emotional
 film). Treat it as a starting framework, not a mandatory sequence.
 
+For basketball games and sports-event recaps, also read
+[basketball-event-recap.md](basketball-event-recap.md). It covers action-range
+selection, participation and supporter coverage, variable cut density, and
+evidence-based music analysis.
+
 ## Lyrical Emotional Film
 
 A lyrical emotional film creates emotion through contrast and progression:
