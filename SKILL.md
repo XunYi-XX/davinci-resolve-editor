@@ -5,7 +5,8 @@ description: Inspect or edit a running DaVinci Resolve project through its Scrip
 
 # DaVinci Resolve Editor / 达芬奇剪辑助手
 
-Use `scripts/resolve_cli.py` for the official Resolve Scripting API. Prefer API
+Use the connected Resolve MCP when available, with `scripts/resolve_cli.py` as
+a direct official Scripting API fallback. Prefer API
 operations to UI automation. CLI results are JSON; explain the verified outcome
 in the user's language. This package provides one entrypoint and task-specific
 references. Read only the references needed for the request.
@@ -14,6 +15,7 @@ references. Read only the references needed for the request.
 
 | Request | Reference and action |
 |---|---|
+| Manual lookup, official training, installed effects research, or version-specific API questions | [official-knowledge.md](references/official-knowledge.md); knowledge-only requests must not connect to or operate Resolve |
 | Project, timeline, media, marker, property, assembly, or export operations | [operations.md](references/operations.md); use the CLI below |
 | Learn a finished timeline, review shot selection, rhythm, music use, or compare versions | [style-audit.md](references/style-audit.md); default to read-only |
 | Editorial judgment, selection, structure, or an edit in a named style | [editing-styles.md](references/editing-styles.md); choose its relevant style reference |
@@ -24,6 +26,9 @@ Do not route it to OpenFilm merely because it concerns video. If the user uses
 `of` or `OF` as their established OpenFilm shorthand, interpret it accordingly.
 
 ## Resolve Workflow
+
+For knowledge-only tasks, skip this workflow entirely: read files and reference
+documentation without status calls, runtime enumeration, page changes or tests.
 
 1. Run `status`; record the current project, timeline, page, and playhead as needed.
 2. Read the target using `list-timelines`, `inspect-timeline`, and, when needed,
